@@ -14,8 +14,22 @@ HTML_TEMPLATE = """
   <title>Local ChatGPT</title>
   <link rel=\"stylesheet\" href=\"https://bifrost.intility.com/_next/static/css/bde88469caabe209.css\">
   <link rel=\"stylesheet\" href=\"https://bifrost.intility.com/_next/static/css/86318bdb6dcdcee4.css\">
+  <style>
+    body{font-family:Inter,Arial,sans-serif;padding:1rem;max-width:900px;margin:auto;}
+    .chat{margin-top:1rem;display:flex;flex-direction:column;gap:1rem;}
+    .entry{display:flex;flex-direction:column;max-width:75%;}
+    .user{margin-left:auto;align-items:flex-end;}
+    .assistant{margin-right:auto;align-items:flex-start;}
+    .bubble{padding:.5rem .75rem;border-radius:.75rem;background:#f3f4f6;}
+    .user .bubble{background:#2563eb;color:#fff;}
+    body.dark{background:#1f2937;color:#d1d5db;}
+    body.dark .bubble{background:#374151;color:#fff;}
+    body.dark .user .bubble{background:#3b82f6;}
+    .toggle{position:fixed;top:1rem;right:1rem;}
+  </style>
 </head>
-<body class=\"p-4\">
+<body class=\"{{ 'dark' if dark else '' }}\">
+  <button class=\"bif-button toggle\" onclick=\"toggleTheme()\">Toggle theme</button>
   <h1 class=\"text-2xl mb-4\">Local ChatGPT</h1>
   <form action=\"{{ url_for('send') }}\" method=\"post\" class=\"space-y-2\">
     <select name=\"provider\" class=\"bif-select\">
@@ -27,16 +41,22 @@ HTML_TEMPLATE = """
     <input type=\"hidden\" name=\"edit_index\" value=\"{{ edit_index }}\">
     <button type=\"submit\" class=\"bif-button primary\">Send</button>
   </form>
-  <ul class=\"mt-4 space-y-2\">
+  <div class=\"chat\">
   {% for i, m in enumerate(messages) %}
-    <li class=\"p-2 border rounded\">
-      <strong>{{ m['role'] }}</strong>: {{ m['content'] }}
+    <div class=\"entry {{ m['role'] }}\">
+      <div class=\"bubble\">{{ m['content'] }}</div>
       {% if m['role'] == 'user' %}
-        <a href=\"{{ url_for('edit', index=i) }}\" class=\"ml-2 text-blue-600\">Edit</a>
+        <a href=\"{{ url_for('edit', index=i) }}\" class=\"ml-2 text-blue-400\">Edit</a>
       {% endif %}
-    </li>
+    </div>
   {% endfor %}
-  </ul>
+  </div>
+  <script>
+  function toggleTheme(){
+    document.body.classList.toggle('dark');
+    fetch('/toggle_theme', {method:'post'});
+  }
+  </script>
 </body>
 </html>
 """
@@ -45,6 +65,7 @@ class ChatSession:
     def __init__(self):
         self.provider = 'openai'
         self.messages = []
+        self.dark = False
 
 def available_providers():
     return ['openai', 'azure', 'gemini', 'claude']
@@ -59,7 +80,8 @@ def index():
         provider=session.provider,
         providers=available_providers(),
         edit_index='',
-        edit_text=''
+        edit_text='',
+        dark=session.dark
     )
 
 @app.route('/send', methods=['POST'])
@@ -91,7 +113,8 @@ def edit(index: int):
         provider=session.provider,
         providers=available_providers(),
         edit_index=index,
-        edit_text=session.messages[index]['content']
+        edit_text=session.messages[index]['content'],
+        dark=session.dark
     )
 
 def call_provider(name: str, messages: list) -> str:
@@ -140,6 +163,11 @@ def call_provider(name: str, messages: list) -> str:
         return ''.join(block.text for block in resp.content)
 
     return '[Unsupported provider]'
+
+@app.route('/toggle_theme', methods=['POST'])
+def toggle_theme():
+    session.dark = not session.dark
+    return ('', 204)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -42,3 +42,4 @@ python webapp.py
 ```
 
 Open `http://localhost:5000` in your browser. The UI uses [Bifrost Design System](https://bifrost.intility.com/). Select a provider, send messages and edit earlier ones using the *Edit* links next to each user message.
+Use the **Toggle theme** button to switch between light and dark mode.
