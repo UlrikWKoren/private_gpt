@@ -8,31 +8,30 @@ app = Flask(__name__)
 
 HTML_TEMPLATE = """
 <!doctype html>
-<html lang=\"en\">
+<html lang=\"en\" class=\"bf-theme-purple\">
 <head>
   <meta charset=\"utf-8\">
   <title>Local ChatGPT</title>
-  <link rel=\"stylesheet\" href=\"https://bifrost.intility.com/_next/static/css/bde88469caabe209.css\">
-  <link rel=\"stylesheet\" href=\"https://bifrost.intility.com/_next/static/css/86318bdb6dcdcee4.css\">
+  <link rel=\"stylesheet\" href=\"https://unpkg.com/@intility/bifrost-css@latest/dist/bifrost-all.css\">
 </head>
-<body class=\"p-4\">
-  <h1 class=\"text-2xl mb-4\">Local ChatGPT</h1>
-  <form action=\"{{ url_for('send') }}\" method=\"post\" class=\"space-y-2\">
-    <select name=\"provider\" class=\"bif-select\">
+<body class=\"bf-page-padding\">
+  <h1 class=\"bf-h2 bfc-theme\">Local ChatGPT</h1>
+  <form action=\"{{ url_for('send') }}\" method=\"post\" style=\"display:flex;flex-direction:column;gap:0.5rem;\">
+    <select name=\"provider\" class=\"bf-select\">
       {% for p in providers %}
       <option value=\"{{ p }}\" {% if p==provider %}selected{% endif %}>{{ p }}</option>
       {% endfor %}
     </select>
-    <textarea name=\"message\" rows=\"4\" class=\"bif-textarea w-full\" required>{{ edit_text }}</textarea>
+    <textarea name=\"message\" rows=\"4\" class=\"bf-textarea\" required>{{ edit_text }}</textarea>
     <input type=\"hidden\" name=\"edit_index\" value=\"{{ edit_index }}\">
-    <button type=\"submit\" class=\"bif-button primary\">Send</button>
+    <button type=\"submit\" class=\"bf-button primary\">Send</button>
   </form>
-  <ul class=\"mt-4 space-y-2\">
+  <ul class=\"bf-elements\" style=\"margin-top:1rem;\">
   {% for i, m in enumerate(messages) %}
-    <li class=\"p-2 border rounded\">
+    <li class=\"bf-padding bfc-base-3-bg bf-rounded\">
       <strong>{{ m['role'] }}</strong>: {{ m['content'] }}
       {% if m['role'] == 'user' %}
-        <a href=\"{{ url_for('edit', index=i) }}\" class=\"ml-2 text-blue-600\">Edit</a>
+        <a href=\"{{ url_for('edit', index=i) }}\" class=\"bf-link\">Edit</a>
       {% endif %}
     </li>
   {% endfor %}
